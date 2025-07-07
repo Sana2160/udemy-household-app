@@ -5,10 +5,15 @@ import Home from './pages/Home';
 import Report from './pages/Report';
 import NoMatch from './pages/NoMatch';
 import AppLayout from './components/layout/AppLayout';
+import { theme } from './theme/theme';
+import { ThemeProvider } from '@emotion/react';
+import { CssBaseline } from '@mui/material';
 
 
 function App() {
   return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
     <Router>
       <Routes>
         <Route path='/' element={<AppLayout />}>
@@ -18,6 +23,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 
