@@ -69,7 +69,7 @@ const SideBar = ({drawerWidth,mobileOpen,handleDrawerToggle}:SidebarProps) => {
   return (
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
         aria-label="mailbox folders"
       >
         {/* モバイル用 */}
@@ -81,10 +81,9 @@ const SideBar = ({drawerWidth,mobileOpen,handleDrawerToggle}:SidebarProps) => {
             display: { xs: 'block', sm: 'none' },
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
-          slotProps={{
-            root: {
-              keepMounted: true, // Better open performance on mobile.
-            },
+
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
           }}
         >
           {drawer}
@@ -94,7 +93,7 @@ const SideBar = ({drawerWidth,mobileOpen,handleDrawerToggle}:SidebarProps) => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', md: 'block' },
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
           open
