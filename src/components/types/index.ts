@@ -17,3 +17,13 @@ export interface Balance {
     expense: number,
     balance: number,
 }
+
+//createEventsの引数の型
+export interface CalenderContent {
+    start: string,
+    income: string,
+    expense: string,
+    balance: string,
+}
+
+//
