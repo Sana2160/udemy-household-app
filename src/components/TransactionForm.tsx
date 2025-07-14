@@ -9,23 +9,54 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import CloseIcon from "@mui/icons-material/Close"; // 閉じるボタン用のアイコン
 import FastfoodIcon from "@mui/icons-material/Fastfood"; //食事アイコン
 import { on } from "events";
+import { Controller, useForm } from "react-hook-form";
+import { set } from "date-fns";
 
 interface TransactionFormProps {
   onCloseForm: () => void;
+  isEntryDrawerOpen: boolean;
+  currentDay: string; // 現在の日付を表す文字列
 }
 
-const TransactionForm = ({onCloseForm}: TransactionFormProps) => {
+type incomeExpense = "income" | "expense";
+
+const TransactionForm = ({
+  onCloseForm,
+  isEntryDrawerOpen,
+  currentDay
+}: TransactionFormProps) => {
   const formWidth = 320;
+
+  const{ control, setValue, watch } = useForm({
+    defaultValues: {
+      type: "expense", // 初期値を支出に設定
+      date: currentDay, // 今日の日付を初期値に設定
+      amount: 0,
+      category: "",
+      content: "",
+    },
+  });
+
+  const incomeExpenseToggle = (type: incomeExpense) => {
+    setValue("type", type);
+  }
+
+  const currentType = watch("type");
+
+  useEffect(() => {
+    setValue("date", currentDay);
+  }, [currentDay]);
+
   return (
     <Box
       sx={{
         position: "fixed",
         top: 64,
-        right: formWidth, // フォームの位置を調整
+        right: isEntryDrawerOpen ? formWidth: "-2%", // フォームの位置を調整
         width: formWidth,
         height: "100%",
         bgcolor: "background.paper",
@@ -45,7 +76,7 @@ const TransactionForm = ({onCloseForm}: TransactionFormProps) => {
         <Typography variant="h6">入力</Typography>
         {/* 閉じるボタン */}
         <IconButton
-        onClick={onCloseForm}
+          onClick={onCloseForm}
           sx={{
             color: (theme) => theme.palette.grey[500],
           }}
@@ -57,35 +88,94 @@ const TransactionForm = ({onCloseForm}: TransactionFormProps) => {
       <Box component={"form"}>
         <Stack spacing={2}>
           {/* 収支切り替えボタン */}
-          <ButtonGroup fullWidth>
-            <Button variant={"contained"} color="error">
-              支出
-            </Button>
-            <Button>収入</Button>
-          </ButtonGroup>
-          {/* 日付 */}
-          <TextField
-            label="日付"
-            type="date"
-            InputLabelProps={{
-              shrink: true,
+          <Controller 
+            name="type"
+            control={control}
+            render={({field}) => {
+              return(
+              <ButtonGroup fullWidth>
+                <Button 
+                  variant={field.value === "expense" ? "contained" : "outlined"}
+                  color="error"
+                  onClick={() => incomeExpenseToggle("expense")}
+                >
+                  支出
+                </Button>
+                <Button
+                  onClick={() => incomeExpenseToggle("income")}
+                  color={"primary"}
+                  variant={
+                    field.value === "income" ? "contained" : "outlined"
+                  }
+                >
+                  収入</Button>
+              </ButtonGroup>
+              );
             }}
           />
+          
+          {/* 日付 */}
+          <Controller
+            name="date"
+            control={control}
+            render={({field}) => (
+              <TextField
+                {...field}
+                label="日付"
+                type="date"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            )}
+          />
+          
           {/* カテゴリ */}
-          <TextField id="カテゴリ" label="カテゴリ" select value={"食費"}>
-            <MenuItem value={"食費"}>
-              <ListItemIcon>
-                <FastfoodIcon />
-              </ListItemIcon>
-              食費
-            </MenuItem>
-          </TextField>
+          <Controller
+            name="category"
+            control={control}
+            render={({field}) => (
+              <TextField
+                {...field}
+                id="カテゴリ"
+                label="カテゴリ"
+                select
+              >
+                <MenuItem value={"食費"}>
+                  <ListItemIcon>
+                    <FastfoodIcon />
+                  </ListItemIcon>
+                  食費
+                </MenuItem>
+              </TextField>
+            )}
+          />
+
           {/* 金額 */}
-          <TextField label="金額" type="number" />
+          <Controller
+            name="amount"
+            control={control}
+            render={({field}) => (
+              <TextField {...field} label="金額" type="number" />
+            )}
+          />
+          
           {/* 内容 */}
-          <TextField label="内容" type="text" />
+          <Controller
+            name="content"
+            control={control}
+            render={({field}) => (
+              <TextField {...field} label="内容" type="text" />
+            )}
+          />
+
           {/* 保存ボタン */}
-          <Button type="submit" variant="contained" color={"primary"} fullWidth>
+          <Button
+            type="submit" 
+            variant="contained" 
+            color={currentType === "income" ? "primary" : "error"}
+            fullWidth
+          >
             保存
           </Button>
         </Stack>

@@ -26,10 +26,12 @@ import { theme } from "../theme/theme";
 interface TransactionMenuProps {
   dailyTransactions: Transaction[]; // 取引履歴のデータ型に合わせて適切に定義してください
   currentDay: string; // 現在の日付を表す文字列
+  onAddTransactionForm: () => void; // 取引追加フォームを開くための関数
 }
 const TransactionMenu = ({
   dailyTransactions,
   currentDay,
+  onAddTransactionForm,
 }: TransactionMenuProps) => {
   const menuDrawerWidth = 320;
   return (
@@ -65,7 +67,10 @@ const TransactionMenu = ({
             <Typography variant="body1">内訳</Typography>
           </Box>
           {/* 右側の追加ボタン */}
-          <Button startIcon={<AddCircleIcon />} color="primary">
+          <Button startIcon={<AddCircleIcon />}
+            color="primary"
+            onClick={onAddTransactionForm}
+          >
             内訳を追加
           </Button>
         </Box>
