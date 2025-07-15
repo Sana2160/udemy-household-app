@@ -27,11 +27,14 @@ interface TransactionMenuProps {
   dailyTransactions: Transaction[]; // 取引履歴のデータ型に合わせて適切に定義してください
   currentDay: string; // 現在の日付を表す文字列
   onAddTransactionForm: () => void; // 取引追加フォームを開くための関数
+  onSelectTransaction: (transaction: Transaction) => void;
 }
+
 const TransactionMenu = ({
   dailyTransactions,
   currentDay,
   onAddTransactionForm,
+  onSelectTransaction,
 }: TransactionMenuProps) => {
   const menuDrawerWidth = 320;
   return (
@@ -87,6 +90,7 @@ const TransactionMenu = ({
                         ? (theme) => theme.palette.incomeColor.light
                         : (theme) => theme.palette.expenseColor.light,
                   }}
+                  onClick={() => onSelectTransaction(transaction)}
                 >
                   <CardActionArea>
                     <CardContent>

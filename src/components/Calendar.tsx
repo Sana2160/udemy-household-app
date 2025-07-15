@@ -1,13 +1,10 @@
 import FullCalendar from '@fullcalendar/react'
-import React, { use } from 'react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import jaLocale from '@fullcalendar/core/locales/ja'
-import { render } from '@testing-library/react'
 import { DatesSetArg, EventContentArg } from '@fullcalendar/core'
 import "../calendar.css"
 import { calculateDailyBalances } from '../utils/financeCalculations'
 import { Balance, CalenderContent, Transaction } from './types'
-import { start } from 'repl'
 import { formatCurrency } from '../utils/formatting'
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import { useTheme } from '@mui/material'
