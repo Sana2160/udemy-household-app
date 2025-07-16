@@ -20,7 +20,6 @@ import { doc, deleteDoc, updateDoc} from "firebase/firestore";
 
 
 function App() {
-
   // Firestoreのエラーを判定する型ガード
   function isFireStoreError(err: unknown):err is {code: string, message: string} {
     return typeof err === 'object' && err!== null && 'code' in err;
@@ -28,7 +27,7 @@ function App() {
   }
   const[transactions,setTransactions] = useState<Transaction[]>([]);
   const[currentMonth, setCurrentMonth] = useState(new Date());
-  console.log(currentMonth);
+  const[isLoading,setIsLoading] = useState(true);
   format(currentMonth, 'yyyy-MM');
 
   useEffect(() => {
@@ -48,7 +47,6 @@ function App() {
           
         });
 
-        console.log("取得したトランザクションデータ", transactionsData);
         setTransactions(transactionsData);
         } catch (err) {
           if (isFireStoreError(err)) {
@@ -57,6 +55,8 @@ function App() {
           } else {
             console.error("一般的なエラー:", err);
           }
+        } finally {
+          setIsLoading(false);
         }
       };
       fetchTransactions();
@@ -144,7 +144,15 @@ function App() {
               />
             }
           />
-          <Route path='/report' element={<Report />} />
+          <Route path='/report' element={
+            <Report
+              monthlyTransactions={monthlyTransactions}
+              setCurrentMonth={setCurrentMonth}
+              currentMonth={currentMonth}
+              isLoading={false}
+              />
+            }
+          />
           <Route path='*' element={<NoMatch />} />
         </Route>
 
