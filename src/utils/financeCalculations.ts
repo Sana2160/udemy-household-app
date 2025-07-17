@@ -1,4 +1,3 @@
-import { aC } from "@fullcalendar/core/internal-common";
 import { Balance, Transaction } from "../components/types";
 
 export function financeCalculations(transactions: Transaction[]): Balance {

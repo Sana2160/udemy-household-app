@@ -1,5 +1,5 @@
 import { createTheme, PaletteColor } from "@mui/material";
-import { blue, green, red, amber, deepPurple, indigo, teal, pink } from "@mui/material/colors";
+import { blue, green, red, amber, deepPurple, indigo, teal, pink, lightBlue, cyan, lightGreen, deepOrange, purple } from "@mui/material/colors";
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -48,17 +48,17 @@ export const theme = createTheme({
 
     // カテゴリカラーを追加
     incomeCategoryColor: {
-      給与: blue[500],
-      副収入: teal[400],
-      お小遣い: indigo[300],
+      給与: lightBlue[600],
+      副収入: cyan[200],
+      お小遣い: lightGreen["A700"],
     },
     expenseCategoryColor: {
-      食費: red[400],
-      日用品: pink[300],
-      住居費: deepPurple[300],
-      交際費: amber[600],
-      交通費: blue[300],
-      娯楽: green[400],
+      食費: deepOrange[500],
+      日用品: lightGreen[500],
+      住居費: amber[500],
+      交際費: pink[300],
+      交通費: cyan[200],
+      娯楽: purple[400],
     },
   },
 });

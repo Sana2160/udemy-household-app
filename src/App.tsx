@@ -7,14 +7,15 @@ import NoMatch from './pages/NoMatch';
 import AppLayout from './components/layout/AppLayout';
 import { theme } from './theme/theme';
 import { ThemeProvider } from '@emotion/react';
-import { CssBaseline, useScrollTrigger } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from './components/firebase';
-import { Transaction } from './components/types';
+import { Category, Transaction } from './components/types';
 import { format } from 'date-fns';
 import { formatMonth } from './utils/formatting';
 import { Schema } from './validations/schema';
 import { doc, deleteDoc, updateDoc} from "firebase/firestore";
+import { CircularProgress, Box } from '@mui/material';
 
 
 
@@ -90,18 +91,28 @@ function App() {
     }
   }
 
-  const handleDeleteTransaction = async(transactionId: string) => {
-    try{
-      //firestoreデータ削除
-      await deleteDoc(doc(db, "Transactions", transactionId));
-      const filterdTransactions = transactions.filter((transaction) => transaction.id !== transactionId)
+  const handleDeleteTransaction = async(
+    transactionId: string | readonly string[]
+  ) => {
+    try {
+      const idsToDelete = Array.isArray(transactionId)
+        ? transactionId
+        : [transactionId];
+
+      for (const id of idsToDelete) {
+        //firestoreのデータ削除
+        await deleteDoc(doc(db, "Transactions", id));
+      }
+      //複数の取引を削除可能
+      const filterdTransactions = transactions.filter(
+        (transaction) => !idsToDelete.includes(transaction.id)
+      );
       setTransactions(filterdTransactions);
-    } catch(err){
+    } catch (err) {
       if (isFireStoreError(err)) {
-        console.error(JSON.stringify(err, null, 2));
-        console.error("Firestore エラー:", err.code, err.message);
-    } else {
-        console.error("一般的なエラー:", err);
+        console.error("firestoreのエラーは：", err);
+      } else {
+        console.error("一般的なエラーは:", err);
       }
     }
   };
@@ -111,8 +122,10 @@ function App() {
       //Firestore更新
       const docRef = doc(db, "Transactions", transactionId);
       await updateDoc(docRef, transaction)
-      const updatedTransactions = transactions.map((t) => t.id === transactionId ? {...t, ...transaction} : t
-    );
+      const updatedTransactions: Transaction[] = transactions.map((t) =>
+        t.id === transactionId ? { ...t, ...transaction, category: transaction.category as Category | undefined } : t
+      );
+
     setTransactions(updatedTransactions);
     } catch(err){
       if (isFireStoreError(err)) {
@@ -125,6 +138,21 @@ function App() {
   }
 
   console.log("月ごとのトランザクション", monthlyTransactions);
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -150,6 +178,7 @@ function App() {
               setCurrentMonth={setCurrentMonth}
               currentMonth={currentMonth}
               isLoading={false}
+              onDeleteTransaction={handleDeleteTransaction}
               />
             }
           />

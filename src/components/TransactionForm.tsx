@@ -9,7 +9,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { JSX, useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import CloseIcon from "@mui/icons-material/Close"; // 閉じるボタン用のアイコン
 import FastfoodIcon from "@mui/icons-material/Fastfood"; //食事アイコン
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
@@ -21,10 +21,9 @@ import TrainIcon from "@mui/icons-material/Train";
 import WorkIcon from "@mui/icons-material/Work";
 import SavingsIcon from "@mui/icons-material/Savings";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
-import { ExpenceCategory, inComeCategory, Transaction } from "./types";
+import { Transaction } from "./types";
 import {zodResolver} from "@hookform/resolvers/zod";
 import { Schema, transactionSchema } from "../validations/schema";
-import { Category } from "@mui/icons-material";
 
 interface TransactionFormProps {
   onCloseForm: () => void;
@@ -33,17 +32,17 @@ interface TransactionFormProps {
   selectedTransaction: Transaction | null;
   setSelectedTransaction: React.Dispatch<React.SetStateAction<Transaction | null>>;
   onSaveTransaction: (transaction: Schema) => Promise<void>;
-  onDeleteTransaction: (transactionId: string) => Promise<void>;
+  onDeleteTransaction: (transactionId: string | readonly string[]) => Promise<void>;
   onUpdateTransaction: (transaction: Schema, transactionId: string) => Promise<void>;
 }
 
 
 
 type incomeExpense = "income" | "expense";
-interface CategoryItem {
-  label: inComeCategory | ExpenceCategory;
-  icon: JSX.Element;
-}
+// interface CategoryItem {
+//   label: inComeCategory | ExpenceCategory;
+//   icon: JSX.Element;
+// }
 
 const TransactionForm = ({
   onCloseForm,
@@ -57,20 +56,21 @@ const TransactionForm = ({
 }: TransactionFormProps) => {
   const formWidth = 320;
 
-  const expenseCategories: CategoryItem[] = [
-    { label: "食費", icon: <FastfoodIcon fontSize="small" /> },
-    { label: "日用品", icon: <AddHomeIcon fontSize="small" /> },
-    { label: "住居費", icon: <AddBusinessIcon fontSize="small" /> },
-    { label: "交際費", icon: <Diversity3Icon fontSize="small" /> },
-    { label: "娯楽費", icon: <SportsTennisIcon fontSize="small" /> },
-    { label: "交通費", icon: <TrainIcon fontSize="small" /> },
-  ];
+    const expenseCategories = useMemo(() => [
+      { label: "食費", icon: <FastfoodIcon fontSize="small" /> },
+      { label: "日用品", icon: <AddHomeIcon fontSize="small" /> },
+      { label: "住居費", icon: <AddBusinessIcon fontSize="small" /> },
+      { label: "交際費", icon: <Diversity3Icon fontSize="small" /> },
+      { label: "娯楽費", icon: <SportsTennisIcon fontSize="small" /> },
+      { label: "交通費", icon: <TrainIcon fontSize="small" /> },
+    ], []);
 
-  const incomeCategories: CategoryItem[] = [
+  const incomeCategories = useMemo(() => [
     { label: "給与", icon: <WorkIcon fontSize="small" /> },
     { label: "副収入", icon: <SavingsIcon fontSize="small" /> },
     { label: "お小遣い", icon: <AlarmIcon fontSize="small" /> },
-  ];
+  ], []);
+
 
   const [categories, setCategories] = useState(expenseCategories);
 
@@ -85,7 +85,7 @@ const TransactionForm = ({
       type: "expense", // 初期値を支出に設定
       date: currentDay, // 今日の日付を初期値に設定
       amount: 0,
-      category: undefined, // 初期値をundefinedに設定
+      category: "", // 初期値を""に設定
       content: "",
     },
     resolver: zodResolver(transactionSchema),
@@ -94,7 +94,7 @@ const TransactionForm = ({
 
   const incomeExpenseToggle = (type: incomeExpense) => {
     setValue("type", type);
-    setValue("category", undefined)
+    setValue("category", "")
   }
 
   const currentType = watch("type");
@@ -103,11 +103,11 @@ const TransactionForm = ({
     const newCategories =
       currentType === "expense" ? expenseCategories : incomeCategories;
     setCategories(newCategories);
-  }, [currentType]);
+  }, [currentType, expenseCategories, incomeCategories, setCategories]);
 
   useEffect(() => {
     setValue("date", currentDay);
-  }, [currentDay]);
+  }, [currentDay, setValue]);
 
   //送信
   const onSubmit: SubmitHandler<Schema> = (data) => {
@@ -136,24 +136,26 @@ const TransactionForm = ({
       type: "expense",
       date: currentDay,
       amount: 0,
-      category: undefined, // 初期値をundefinedに設定
+      category: "", // 初期値をundefinedに設定
       content: "",
     })
   };
 
   useEffect(() => {
-    if (selectedTransaction) {
-      const categoryExists = categories.some(
-        (category) => category.label === selectedTransaction.category
-      );
+    if (!selectedTransaction) return;
 
-      if (categoryExists) {
-        setValue("category", selectedTransaction.category as Schema["category"]);
-      } else {
-        setValue("category", undefined); // 空文字をセット
-      }
-    }
-  }, [selectedTransaction, categories, setValue]);
+    setValue("type", selectedTransaction.type);
+    setValue("date", selectedTransaction.date);
+    setValue("amount", selectedTransaction.amount);
+    setValue("content", selectedTransaction.content);
+
+    const exists = categories.some(
+      (c) => c.label === selectedTransaction.category
+    );
+
+    setValue("category", exists ? selectedTransaction.category : "");
+  }, [selectedTransaction, setValue, categories]);
+
 
 
 
@@ -175,7 +177,7 @@ const TransactionForm = ({
       content: "",
     })
   }
-}, [selectedTransaction, setValue]);
+}, [selectedTransaction, setValue, reset, currentDay]);
 
   const handleDelete = () => {
     if(selectedTransaction){
@@ -271,14 +273,18 @@ const TransactionForm = ({
             control={control}
             render={({field}) => (
               <TextField 
+                {...field}
+                select
+                label="カテゴリ"
                 error={!!errors.category}
                 helperText={errors.category?.message}
-                {...field}
-                id="カテゴリ"
-                label="カテゴリ"
-                select
+                InputLabelProps={{
+                  htmlFor: "category"
+                }}
+                inputProps={{ id: 'category'}}
               >
-                <MenuItem value={undefined}><em>カテゴリを選択してください</em></MenuItem>
+                <MenuItem value={""}><em>カテゴリを選択してください</em></MenuItem>
+                
                 {categories.map((category, index) => (
                   <MenuItem value={category.label} key={index}>
                     <ListItemIcon>{category.icon}</ListItemIcon>
